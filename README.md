@@ -44,5 +44,3 @@ Built for VPG's tech specialist, who may not have prior marketing experience, th
 
 ---
 
-This app serves as an essential tool to help VPG leverage their Google Ads grant, enabling them to further their mission and reach more individuals in need.
-
