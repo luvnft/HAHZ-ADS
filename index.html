@@ -132,6 +132,7 @@
 
       <button onclick="addAd()">Add Ad</button>
       <button onclick="autoFillFields()">Next Description</button>
+      <div id="feedback-message"></div>
     </div>
 
     <h3>Added Ads</h3>
@@ -140,22 +141,21 @@
     </div>
 
     <button onclick="generatePrompts()">Generate Prompts for All Ads</button>
-
     <div id="prompt-output">
       <h3>Generated Prompts</h3>
       <pre id="prompt-text">Your prompts will appear here...</pre>
     </div>
 
-    <button onclick="window.open('https://chatgpt.com/g/g-Vc93hFzDz-google-ads-pro', '_blank');" >
+    <button id="gpt-link-button" onclick="openGPTLink()" disabled>
       Use GPT Assistant to Generate Better Campaigns
-  </button>
-  
-
+    </button>
   </div>
 
+
   <script>
-    const ads = [];
+   const ads = [];
     const currentOptionIndex = {};
+
 
     const prebuiltData = {
       "Empowering At-Risk Youth": [
@@ -455,31 +455,38 @@
       ],
     };
 
+    function validateFields(title, description, keywords, budget, theme) {
+      let message = "";
+      if (!title) message += "Title is required.\n";
+      if (!description) message += "Description is required.\n";
+      if (!keywords) message += "Keywords are required.\n";
+      if (!budget || budget <= 0) message += "Budget must be a positive number.\n";
+      if (!theme) message += "Theme is required.\n";
+      return message;
+    }
+
+    function showFeedback(message, type = "error") {
+      const feedback = document.getElementById("feedback-message");
+      feedback.textContent = message;
+      feedback.style.color = type === "error" ? "red" : "green";
+    }
+
     function autoFillFields() {
       const selectedTitle = document.getElementById("campaign-title").value;
-
       if (!selectedTitle) {
-        alert("Please select a campaign title!");
+        showFeedback("Please select a campaign title!");
         return;
       }
-
-      // Initialize the index for the selected title if not already done
-      if (!currentOptionIndex[selectedTitle]) {
-        currentOptionIndex[selectedTitle] = 0;
-      }
+      if (!currentOptionIndex[selectedTitle]) currentOptionIndex[selectedTitle] = 0;
 
       const options = prebuiltData[selectedTitle];
       if (options) {
         const currentOption = options[currentOptionIndex[selectedTitle]];
-
         document.getElementById("description").value = currentOption.description;
         document.getElementById("keywords").value = currentOption.keywords;
-
-        // Cycle to the next option in the array
-        currentOptionIndex[selectedTitle] =
-          (currentOptionIndex[selectedTitle] + 1) % options.length;
+        currentOptionIndex[selectedTitle] = (currentOptionIndex[selectedTitle] + 1) % options.length;
       } else {
-        alert("No predefined data available for this campaign.");
+        showFeedback("No predefined data available for this campaign.");
       }
     }
 
@@ -490,14 +497,16 @@
       const budget = document.getElementById("budget").value;
       const theme = document.getElementById("theme").value;
 
-      if (!title || !description || !keywords || !budget || !theme) {
-        alert("Please fill out all fields to add an ad.");
+      const validationMessage = validateFields(title, description, keywords, budget, theme);
+      if (validationMessage) {
+        showFeedback(validationMessage);
         return;
       }
 
-      const ad = { title, description, keywords, budget, theme };
-      ads.push(ad);
+      ads.push({ title, description, keywords, budget, theme });
       renderAds();
+      showFeedback("Ad added successfully!", "success");
+      document.getElementById("gpt-link-button").disabled = false;
     }
 
     function renderAds() {
@@ -517,29 +526,52 @@
               <p><strong>Keywords:</strong> ${ad.keywords}</p>
               <p><strong>Budget:</strong> $${ad.budget}</p>
               <p><strong>Theme:</strong> ${ad.theme}</p>
+              <button onclick="editAd(${index})">Edit</button>
+              <button onclick="deleteAd(${index})">Delete</button>
             </div>`
         )
         .join("");
     }
 
+    function editAd(index) {
+      const ad = ads[index];
+      document.getElementById("campaign-title").value = ad.title;
+      document.getElementById("description").value = ad.description;
+      document.getElementById("keywords").value = ad.keywords;
+      document.getElementById("budget").value = ad.budget;
+      document.getElementById("theme").value = ad.theme;
+      deleteAd(index);
+    }
+
+    function deleteAd(index) {
+      ads.splice(index, 1);
+      renderAds();
+      if (ads.length === 0) {
+        document.getElementById("gpt-link-button").disabled = true;
+      }
+    }
+
     function generatePrompts() {
       if (ads.length === 0) {
-        alert("Please add at least one ad to generate prompts.");
+        showFeedback("Please add at least one ad to generate prompts.");
         return;
       }
 
       const prompts = ads
         .map(
-          (ad) => `Create a Google Ads campaign for VPG. VPG is a mission-driven organization committed to empowering individuals and communities through innovative education, training, and support initiatives. Our campaigns aim to drive positive social impact, reduce systemic barriers, and create opportunities for underserved populations. By leveraging technology, mentorship, and skill-building, VPG helps transform lives and build brighter futures.:
-Title: ${ad.title}
-Description: ${ad.description}
-Keywords: ${ad.keywords}
-Budget: $${ad.budget}
-Theme: ${ad.theme}`
+          (ad) => `Intro:Create a Google Ads campaign for VPG. VPG is a mission-driven organization committed to empowering individuals and communities through innovative education, training, and support initiatives. Our campaigns aim to drive positive social impact, reduce systemic barriers, and create opportunities for underserved populations. By leveraging technology, mentorship, and skill-building, VPG helps transform lives and build brighter futures.\n Title: ${ad.title}\nDescription: ${ad.description}\nKeywords: ${ad.keywords}\nBudget: $${ad.budget}\nTheme: ${ad.theme}`
         )
         .join("\n\n");
 
       document.getElementById("prompt-text").innerText = prompts;
+    }
+
+    function openGPTLink() {
+      const prompts = ads
+        .map((ad) => `${ad.title} - ${ad.description}`)
+        .join("; ");
+      const link = `https://chatgpt.com/g/g-Vc93hFzDz-google-ads-pro?prompts=${encodeURIComponent(prompts)}`;
+      window.open(link, "_blank");
     }
   </script>
   
