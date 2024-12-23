@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPG Google Ads Campaign Builder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    header {
+      background-color: #4caf50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+      margin-bottom: 15px;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .metrics {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f1f1f1;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .ad-section {
+      margin-bottom: 20px;
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      background-color: #4caf50;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+    .ad-item {
+      background-color: #f9f9f9;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .ad-item h4 {
+      margin: 0;
+    }
+    #prompt-output {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f1f1f1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-width: 100%; /* Ensures the container does not exceed the parent width */
+  overflow-x: auto; /* Adds horizontal scrolling if the content is wider than the container */
+}
+
+#prompt-text {
+  white-space: pre-wrap; /* Preserves whitespace but allows text to wrap */
+  word-wrap: break-word; /* Breaks long words to prevent overflow */
+  font-family: monospace; /* Keeps the style consistent for code or prompts */
+  margin: 0;
+}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>VPG Google Ads Campaign Builder</h1>
+  </header>
+  <div class="container">
+    <h2>Create and Test Your Campaigns</h2>
+
+    <div class="ad-section">
+      <label for="campaign-title">Campaign Title</label>
+      <select id="campaign-title" onchange="autoFillFields()">
+        <option value="">Select a Title</option>
+        <option value="Empowering At-Risk Youth">Empowering At-Risk Youth</option>
+        <option value="Tech Education for All">Tech Education for All</option>
+        <option value="Breaking the Cycle of Homelessness">Breaking the Cycle of Homelessness</option>
+        <option value="Support Vocational Training">Support Vocational Training</option>
+        <option value="Reduce Recidivism Now">Reduce Recidivism Now</option>
+        <option value="Fighting Poverty with Education">Fighting Poverty with Education</option>
+        <option value="Rebuilding Lives with Technology">Rebuilding Lives with Technology</option>
+      </select>
+
+      <label for="description">Campaign Description</label>
+      <textarea id="description" rows="4" placeholder="Write a compelling campaign description..."></textarea>
+
+      <label for="keywords">Keywords</label>
+      <textarea id="keywords" rows="3" placeholder="Enter keywords (e.g., youth empowerment, tech education)..."></textarea>
+
+      <label for="budget">Ad Budget ($)</label>
+      <input type="number" id="budget" placeholder="Enter your budget (e.g., 10000)" />
+
+      <label for="theme">Ad Theme</label>
+      <select id="theme">
+        <option value="">Select a Theme</option>
+        <option value="Empowerment">Empowerment</option>
+        <option value="Technology">Technology</option>
+        <option value="Community Impact">Community Impact</option>
+        <option value="Education">Education</option>
+      </select>
+
+      <button onclick="addAd()">Add Ad</button>
+      <button onclick="autoFillFields()">Next Description</button>
+    </div>
+
+    <h3>Added Ads</h3>
+    <div id="ads-list">
+      <p>No ads added yet.</p>
+    </div>
+
+    <button onclick="generatePrompts()">Generate Prompts for All Ads</button>
+
+    <div id="prompt-output">
+      <h3>Generated Prompts</h3>
+      <pre id="prompt-text">Your prompts will appear here...</pre>
+    </div>
+
+    <button onclick="window.open('https://chatgpt.com/g/g-Vc93hFzDz-google-ads-pro', '_blank');" >
+      Use GPT Assistant to Generate Better Campaigns
+  </button>
+  
+
+  </div>
+
+  <script>
+    const ads = [];
+    const currentOptionIndex = {};
+
+    const prebuiltData = {
+      "Empowering At-Risk Youth": [
+      { description: "Empowering youth through education and mentorship.", keywords: "youth empowerment, education, mentorship, leadership" },
+  { description: "Helping at-risk youth build a better future.", keywords: "at-risk youth, skill building, social impact, future leaders" },
+  { description: "Supporting at-risk youth with tools to break the cycle of poverty.", keywords: "breaking poverty, youth education, skill development" },
+  { description: "Encouraging leadership skills in young individuals.", keywords: "youth leadership, empowerment, skills training, mentorship" },
+  { description: "Providing career guidance to at-risk youth.", keywords: "career guidance, youth empowerment, skills training, future growth" },
+  { description: "Inspiring young people to achieve their full potential.", keywords: "inspiration, potential, youth development, empowerment" },
+  { description: "Breaking barriers for youth through education.", keywords: "education, breaking barriers, youth opportunities, equity" },
+  { description: "Empowering young minds to dream big and succeed.", keywords: "dream big, youth success, empowerment, motivation" },
+  { description: "Creating pathways to success for underserved youth.", keywords: "success pathways, underserved youth, education, mentorship" },
+  { description: "Providing mentorship programs for at-risk youth.", keywords: "mentorship, at-risk youth, guidance, community support" },
+  { description: "Helping youth discover their talents and skills.", keywords: "talent discovery, youth empowerment, skill development, support" },
+  { description: "Empowering at-risk youth to break cycles of poverty.", keywords: "poverty, youth empowerment, education, future opportunities" },
+  { description: "Offering life-changing programs for underserved youth.", keywords: "life-changing programs, underserved youth, education, empowerment" },
+  { description: "Building self-confidence in young individuals.", keywords: "self-confidence, youth development, skills, empowerment" },
+  { description: "Encouraging personal growth in at-risk youth.", keywords: "personal growth, youth empowerment, mentorship, opportunities" },
+  { description: "Fostering a sense of purpose in young people.", keywords: "purpose, youth opportunities, mentorship, empowerment" },
+  { description: "Helping youth develop skills for lifelong success.", keywords: "lifelong success, youth skills, education, mentorship" },
+  { description: "Transforming the lives of at-risk youth through education.", keywords: "transformation, education, at-risk youth, empowerment" },
+  { description: "Inspiring the next generation of leaders.", keywords: "future leaders, youth inspiration, empowerment, skill building" },
+  { description: "Empowering youth to overcome challenges and thrive.", keywords: "overcoming challenges, youth empowerment, success, mentorship" },
+  { description: "Providing mentorship programs to guide at-risk youth toward success.", keywords: "mentorship, at-risk youth, guidance, empowerment, success" },
+  { description: "Offering life skills training to help at-risk youth achieve independence.", keywords: "life skills, independence, youth empowerment, education" },
+  { description: "Empowering at-risk youth with career-focused education opportunities.", keywords: "career-focused education, youth empowerment, skill-building, opportunities" },
+  { description: "Creating safe spaces for at-risk youth to learn and grow.", keywords: "safe spaces, youth growth, education, empowerment" },
+  { description: "Connecting at-risk youth to role models and community leaders.", keywords: "role models, community leaders, youth empowerment, mentorship" },
+  { description: "Providing tools to help at-risk youth overcome adversity and thrive.", keywords: "overcoming adversity, youth tools, empowerment, success" },
+  { description: "Building a brighter future for at-risk youth through education.", keywords: "brighter future, youth education, empowerment, opportunities" },
+  { description: "Encouraging at-risk youth to dream big and achieve their goals.", keywords: "dream big, youth empowerment, opportunities, education" },
+  { description: "Offering technology programs to prepare at-risk youth for the future.", keywords: "technology programs, youth empowerment, future skills, opportunities" },
+  { description: "Promoting leadership development among at-risk youth.", keywords: "leadership development, at-risk youth, empowerment, education" },
+  { description: "Helping at-risk youth build self-confidence and resilience.", keywords: "self-confidence, resilience, youth empowerment, mentorship" },
+  { description: "Reducing barriers to success for at-risk youth through education.", keywords: "reducing barriers, education, at-risk youth, empowerment" },
+  { description: "Providing scholarships and resources to underserved youth.", keywords: "scholarships, resources, underserved youth, opportunities" },
+  { description: "Encouraging creativity and problem-solving skills in at-risk youth.", keywords: "creativity, problem-solving, youth empowerment, education" },
+  { description: "Supporting at-risk youth with emotional and mental health resources.", keywords: "emotional health, mental health, youth support, empowerment" },
+  { description: "Teaching financial literacy to help at-risk youth build stability.", keywords: "financial literacy, stability, youth empowerment, education" },
+  { description: "Creating community programs to engage and inspire at-risk youth.", keywords: "community programs, engagement, youth empowerment, opportunities" },
+  { description: "Helping at-risk youth develop skills for lifelong success.", keywords: "lifelong success, youth skills, empowerment, education" },
+  { description: "Providing hands-on learning experiences for at-risk youth.", keywords: "hands-on learning, at-risk youth, empowerment, education" },
+  { description: "Empowering at-risk youth to become leaders in their communities.", keywords: "community leaders, youth empowerment, education, mentorship" }
+      ],
+      "Tech Education for All": [
+      { description: "Bringing tech education to underserved communities.", keywords: "tech training, STEM programs, digital literacy, innovation" },
+  { description: "Closing the digital gap with technology skills.", keywords: "technology access, digital skills, tech empowerment, coding" },
+  { description: "Empowering youth with coding and tech education.", keywords: "youth empowerment, coding, tech education, innovation" },
+  { description: "Providing free coding classes to underserved students.", keywords: "free coding classes, underserved students, digital skills, education" },
+  { description: "Offering workshops to teach the basics of programming.", keywords: "programming workshops, education, STEM training, digital literacy" },
+  { description: "Teaching technology skills to prepare individuals for the future.", keywords: "future-ready skills, tech training, STEM education, innovation" },
+  { description: "Promoting tech literacy for underserved adults and youth.", keywords: "tech literacy, underserved communities, education, opportunities" },
+  { description: "Closing the tech skills gap for marginalized communities.", keywords: "tech skills gap, marginalized communities, empowerment, coding" },
+  { description: "Equipping students with skills for high-demand tech jobs.", keywords: "tech jobs, skills training, education, career readiness" },
+  { description: "Inspiring creativity through hands-on coding programs.", keywords: "creativity, hands-on coding, education, STEM programs" },
+  { description: "Providing tech education to improve career prospects.", keywords: "career prospects, tech education, STEM skills, empowerment" },
+  { description: "Teaching essential digital literacy skills to students.", keywords: "digital literacy, education, essential skills, tech training" },
+  { description: "Empowering underserved communities through tech training.", keywords: "underserved communities, tech training, empowerment, skills" },
+  { description: "Introducing students to the fundamentals of coding and robotics.", keywords: "coding fundamentals, robotics, STEM education, digital literacy" },
+  { description: "Providing career pathways through technology education.", keywords: "career pathways, tech education, opportunities, innovation" },
+  { description: "Teaching real-world problem solving through tech workshops.", keywords: "problem-solving, tech workshops, innovation, education" },
+  { description: "Inspiring underserved youth to pursue careers in tech.", keywords: "youth empowerment, tech careers, STEM education, opportunities" },
+  { description: "Developing digital skills to build a stronger community.", keywords: "digital skills, community building, education, empowerment" },
+  { description: "Offering innovative tech programs for all ages.", keywords: "innovative programs, tech education, digital literacy, empowerment" },
+  { description: "Promoting equal access to technology education for everyone.", keywords: "equal access, tech education, digital equity, opportunities" },
+  { description: "Preparing individuals for the future with advanced tech skills.", keywords: "advanced skills, future preparation, tech education, innovation" },
+  { description: "Expanding access to technology education for all ages.", keywords: "tech education, access for all, lifelong learning, digital literacy" },
+  { description: "Teaching foundational coding skills to underserved communities.", keywords: "coding basics, underserved communities, empowerment, tech skills" },
+  { description: "Bridging the digital divide with comprehensive tech programs.", keywords: "digital divide, comprehensive programs, tech access, equity" },
+  { description: "Empowering individuals to innovate through tech education.", keywords: "innovation, tech education, empowerment, opportunities" },
+  { description: "Providing hands-on technology training to inspire the next generation.", keywords: "hands-on training, next generation, tech skills, empowerment" },
+  { description: "Helping youth and adults build careers in the tech industry.", keywords: "career building, youth, adults, tech industry, opportunities" },
+  { description: "Promoting tech literacy to open doors to new possibilities.", keywords: "tech literacy, new possibilities, opportunities, education" },
+  { description: "Equipping students with the skills to succeed in a digital world.", keywords: "digital world, tech skills, student success, education" },
+  { description: "Making technology education accessible to underserved schools.", keywords: "education access, underserved schools, tech skills, equity" },
+  { description: "Transforming lives through free coding and tech workshops.", keywords: "free coding, tech workshops, transformation, empowerment" },
+  { description: "Offering interactive STEM programs to inspire creativity and growth.", keywords: "STEM programs, interactive learning, creativity, tech education" },
+  { description: "Reducing barriers to technology education for marginalized groups.", keywords: "barriers to education, marginalized groups, tech skills, equity" },
+  { description: "Preparing individuals for high-paying tech careers with free training.", keywords: "high-paying careers, tech training, free programs, education" },
+  { description: "Introducing underserved communities to emerging technologies.", keywords: "emerging technologies, underserved communities, tech education" },
+  { description: "Helping students unlock their potential with tech education.", keywords: "unlock potential, students, tech education, skill building" },
+  { description: "Offering digital literacy programs to create brighter futures.", keywords: "digital literacy, brighter futures, tech skills, education" },
+  { description: "Creating innovative learning opportunities with technology.", keywords: "innovative learning, technology, opportunities, education" },
+  { description: "Providing career-focused training for the tech-driven future.", keywords: "career-focused, training, tech future, education" },
+  { description: "Encouraging digital equity by providing tech tools to all.", keywords: "digital equity, tech tools, empowerment, education" },
+  { description: "Fostering self-confidence and creativity through technology education.", keywords: "self-confidence, creativity, tech education, empowerment" }  
+],
+      "Breaking the Cycle of Homelessness": [
+      { description: "Providing essential support to individuals experiencing homelessness.", keywords: "homeless support, essential services, community care, stability" },
+  { description: "Offering resources to help families transition out of homelessness.", keywords: "family support, homelessness transition, stability, resources" },
+  { description: "Connecting the homeless to vocational training and job opportunities.", keywords: "vocational training, job opportunities, homelessness support, empowerment" },
+  { description: "Raising awareness about the root causes of homelessness.", keywords: "homelessness awareness, root causes, education, community impact" },
+  { description: "Providing safe shelters and long-term housing solutions.", keywords: "safe shelters, housing solutions, homelessness, community care" },
+  { description: "Empowering individuals to rebuild their lives after homelessness.", keywords: "rebuilding lives, homelessness support, empowerment, stability" },
+  { description: "Promoting programs to combat youth homelessness.", keywords: "youth homelessness, support programs, education, opportunities" },
+  { description: "Breaking the cycle of homelessness with targeted outreach.", keywords: "outreach programs, homelessness, support, empowerment" },
+  { description: "Providing meals, clothing, and resources to homeless individuals.", keywords: "meals, clothing, resources, homelessness support" },
+  { description: "Offering comprehensive services to address homelessness.", keywords: "comprehensive services, homelessness, resources, empowerment" },
+  { description: "Collaborating with partners to create housing opportunities.", keywords: "collaboration, housing opportunities, homelessness, support" },
+  { description: "Addressing homelessness among veterans through tailored programs.", keywords: "veterans, homelessness, tailored programs, community support" },
+  { description: "Providing case management for individuals at risk of homelessness.", keywords: "case management, homelessness prevention, support, resources" },
+  { description: "Raising funds to expand homelessness prevention programs.", keywords: "fundraising, homelessness prevention, community support, resources" },
+  { description: "Creating opportunities for homeless individuals to gain employment.", keywords: "employment opportunities, homelessness, job training, empowerment" },
+  { description: "Promoting mental health support services for the homeless.", keywords: "mental health, homelessness support, services, stability" },
+  { description: "Offering financial literacy programs to prevent homelessness.", keywords: "financial literacy, homelessness prevention, education, empowerment" },
+  { description: "Reducing homelessness through innovative housing initiatives.", keywords: "housing initiatives, homelessness reduction, community impact, support" },
+  { description: "Empowering communities to support homeless individuals.", keywords: "community empowerment, homelessness, resources, collaboration" },
+  { description: "Providing transitional housing to families in need.", keywords: "transitional housing, family support, homelessness, stability" },
+  { description: "Empowering individuals experiencing homelessness with job training.", keywords: "job training, homelessness, empowerment, skill-building" },
+  { description: "Providing long-term housing solutions for homeless families.", keywords: "housing solutions, homeless families, stability, community support" },
+  { description: "Raising awareness about homelessness and its root causes.", keywords: "homelessness awareness, root causes, education, support" },
+  { description: "Offering wraparound services to help individuals transition out of homelessness.", keywords: "wraparound services, transition, homelessness, empowerment" },
+  { description: "Providing emergency shelter and resources to those in need.", keywords: "emergency shelter, homelessness resources, community care, support" },
+  { description: "Connecting individuals to mental health and addiction recovery services.", keywords: "mental health, addiction recovery, homelessness support, care" },
+  { description: "Creating programs to prevent homelessness before it begins.", keywords: "homelessness prevention, community programs, stability, support" },
+  { description: "Helping individuals secure stable jobs to regain independence.", keywords: "stable jobs, independence, homelessness, empowerment" },
+  { description: "Fostering community partnerships to address homelessness effectively.", keywords: "community partnerships, homelessness, collaboration, solutions" },
+  { description: "Providing meals and basic necessities for those experiencing homelessness.", keywords: "meals, basic necessities, homelessness support, care" },
+  { description: "Offering financial literacy programs to help individuals avoid homelessness.", keywords: "financial literacy, homelessness prevention, education, stability" },
+  { description: "Creating transitional housing programs to promote long-term stability.", keywords: "transitional housing, stability, homelessness solutions, support" },
+  { description: "Encouraging public support for homelessness initiatives and programs.", keywords: "public support, homelessness initiatives, community care, awareness" },
+  { description: "Providing educational opportunities for homeless youth and families.", keywords: "education, homeless youth, opportunities, empowerment" },
+  { description: "Offering re-entry services for homeless individuals leaving incarceration.", keywords: "re-entry services, homelessness, incarceration, support" },
+  { description: "Creating safe spaces for homeless individuals to access resources.", keywords: "safe spaces, homelessness, resource access, care" },
+  { description: "Developing life skills programs to help individuals rebuild their lives.", keywords: "life skills, rebuilding lives, homelessness support, empowerment" },
+  { description: "Reducing chronic homelessness through innovative housing programs.", keywords: "chronic homelessness, innovative housing, stability, solutions" },
+  { description: "Empowering homeless individuals to advocate for their needs.", keywords: "advocacy, homelessness, empowerment, support" },
+  { description: "Providing access to healthcare for individuals experiencing homelessness.", keywords: "healthcare access, homelessness, community care, resources" }
+      ],
+      "Support Vocational Training": [
+      { description: "Providing vocational training to equip individuals with essential skills.", keywords: "vocational training, skill building, career readiness, empowerment" },
+  { description: "Empowering communities with hands-on training for in-demand jobs.", keywords: "hands-on training, in-demand jobs, community empowerment, skills" },
+  { description: "Creating career pathways through vocational education.", keywords: "career pathways, vocational education, job skills, opportunities" },
+  { description: "Offering technical training programs for career advancement.", keywords: "technical training, career advancement, skills development, empowerment" },
+  { description: "Bridging the gap between education and employment through vocational programs.", keywords: "education, employment, vocational programs, career growth" },
+  { description: "Providing vocational skills training to underserved communities.", keywords: "vocational skills, underserved communities, empowerment, opportunities" },
+  { description: "Promoting workforce development through vocational education.", keywords: "workforce development, vocational education, skills training, jobs" },
+  { description: "Helping individuals gain certifications for high-demand industries.", keywords: "certifications, high-demand industries, skills training, vocational education" },
+  { description: "Teaching practical skills to prepare individuals for the job market.", keywords: "practical skills, job market, vocational training, career readiness" },
+  { description: "Empowering at-risk youth with vocational skills training.", keywords: "at-risk youth, vocational skills, empowerment, career opportunities" },
+  { description: "Supporting re-entry individuals with career-focused training programs.", keywords: "re-entry, career-focused training, skills development, empowerment" },
+  { description: "Reducing unemployment through vocational training initiatives.", keywords: "reducing unemployment, vocational training, skills development, opportunities" },
+  { description: "Providing specialized training for sustainable employment opportunities.", keywords: "specialized training, sustainable employment, skills, vocational education" },
+  { description: "Creating hands-on learning experiences to prepare for real-world jobs.", keywords: "hands-on learning, real-world jobs, vocational training, career readiness" },
+  { description: "Offering job placement services for individuals completing vocational training.", keywords: "job placement, vocational training, career support, employment" },
+  { description: "Partnering with businesses to design effective vocational programs.", keywords: "business partnerships, vocational programs, skills training, jobs" },
+  { description: "Equipping individuals with trade-specific skills for better opportunities.", keywords: "trade skills, vocational training, better opportunities, empowerment" },
+  { description: "Promoting lifelong learning through vocational education.", keywords: "lifelong learning, vocational education, skills, empowerment" },
+  { description: "Empowering individuals to achieve self-sufficiency through training.", keywords: "self-sufficiency, vocational training, empowerment, skills development" },
+  { description: "Reducing skill gaps in underserved communities with vocational programs.", keywords: "skill gaps, underserved communities, vocational programs, opportunities" },
+  { description: "Empowering individuals with hands-on training for high-demand careers.", keywords: "hands-on training, high-demand careers, skills development, empowerment" },
+  { description: "Providing vocational education to unlock career opportunities.", keywords: "vocational education, career opportunities, skill-building, empowerment" },
+  { description: "Offering certification programs to boost employability.", keywords: "certification programs, employability, skills training, empowerment" },
+  { description: "Creating pathways to financial independence through vocational training.", keywords: "financial independence, vocational training, skills development, education" },
+  { description: "Supporting at-risk youth with skill-based training programs.", keywords: "at-risk youth, skill-based training, empowerment, opportunities" },
+  { description: "Promoting economic mobility with targeted vocational education.", keywords: "economic mobility, vocational education, skills, opportunities" },
+  { description: "Equipping re-entry individuals with skills to rejoin the workforce.", keywords: "re-entry, workforce skills, vocational training, empowerment" },
+  { description: "Helping individuals gain trade-specific skills for sustainable careers.", keywords: "trade skills, sustainable careers, vocational education, opportunities" },
+  { description: "Providing job readiness training to prepare individuals for success.", keywords: "job readiness, success, vocational training, empowerment" },
+  { description: "Supporting underserved communities with career-focused training programs.", keywords: "underserved communities, career-focused training, opportunities, skills" },
+  { description: "Offering industry-aligned training to meet workforce demands.", keywords: "industry-aligned training, workforce demands, vocational education, skills" },
+  { description: "Fostering creativity and innovation through vocational skills programs.", keywords: "creativity, innovation, vocational skills, empowerment" },
+  { description: "Providing mentorship alongside vocational training for holistic growth.", keywords: "mentorship, holistic growth, vocational training, empowerment" },
+  { description: "Building stronger communities through accessible vocational programs.", keywords: "stronger communities, vocational programs, accessibility, empowerment" },
+  { description: "Reducing unemployment with career-driven vocational education.", keywords: "reducing unemployment, career-driven education, vocational training, empowerment" },
+  { description: "Offering adult education programs to foster lifelong learning.", keywords: "adult education, lifelong learning, vocational skills, opportunities" },
+  { description: "Teaching practical skills to prepare for real-world challenges.", keywords: "practical skills, real-world challenges, vocational training, empowerment" },
+  { description: "Partnering with businesses to create impactful vocational programs.", keywords: "business partnerships, impactful programs, vocational education, skills" },
+  { description: "Providing customized training to match individual career goals.", keywords: "customized training, career goals, vocational education, opportunities" },
+  { description: "Supporting workforce reintegration with advanced vocational training.", keywords: "workforce reintegration, advanced training, vocational education, empowerment" }
+      ],
+      "Reduce Recidivism Now": [
+      { description: "Providing job training programs to reduce recidivism.", keywords: "job training, recidivism reduction, skills development, re-entry programs" },
+  { description: "Offering mentorship to help individuals rebuild their lives after incarceration.", keywords: "mentorship, life rebuilding, recidivism prevention, re-entry support" },
+  { description: "Reducing recidivism through educational opportunities and vocational skills.", keywords: "education, vocational skills, recidivism reduction, empowerment" },
+  { description: "Connecting returning citizens with community resources and support.", keywords: "returning citizens, community resources, support, recidivism prevention" },
+  { description: "Breaking the cycle of re-incarceration with tailored support programs.", keywords: "re-incarceration prevention, tailored support, re-entry, stability" },
+  { description: "Empowering individuals with the tools to successfully reintegrate into society.", keywords: "empowerment, reintegration, recidivism prevention, community support" },
+  { description: "Providing second chances through education, employment, and mentorship.", keywords: "second chances, education, employment, recidivism prevention" },
+  { description: "Promoting personal growth and self-sufficiency to reduce recidivism.", keywords: "personal growth, self-sufficiency, recidivism reduction, empowerment" },
+  { description: "Offering life skills training to help prevent re-incarceration.", keywords: "life skills, re-incarceration prevention, re-entry programs, support" },
+  { description: "Reducing recidivism by addressing the root causes of crime.", keywords: "root causes, crime prevention, recidivism reduction, empowerment" },
+  { description: "Creating safer communities by reducing recidivism rates.", keywords: "safer communities, recidivism rates, prevention, support programs" },
+  { description: "Providing counseling and emotional support to returning citizens.", keywords: "counseling, emotional support, returning citizens, recidivism prevention" },
+  { description: "Helping returning citizens access housing and stable employment.", keywords: "housing access, stable employment, returning citizens, recidivism prevention" },
+  { description: "Building a support network for individuals re-entering society.", keywords: "support network, re-entry, recidivism prevention, empowerment" },
+  { description: "Offering tailored programs for youth involved in the justice system.", keywords: "youth programs, justice system, recidivism prevention, support" },
+  { description: "Reducing recidivism by focusing on rehabilitation and reintegration.", keywords: "rehabilitation, reintegration, recidivism reduction, empowerment" },
+  { description: "Providing educational pathways to help individuals avoid re-incarceration.", keywords: "educational pathways, re-incarceration prevention, re-entry support, opportunities" },
+  { description: "Promoting community partnerships to reduce recidivism.", keywords: "community partnerships, recidivism reduction, collaboration, support" },
+  { description: "Helping individuals transition back into society with dignity and purpose.", keywords: "transition, dignity, purpose, recidivism prevention, re-entry programs" },
+  { description: "Creating innovative solutions to reduce recidivism rates nationwide.", keywords: "innovative solutions, recidivism reduction, nationwide impact, support programs" },
+  { description: "Providing tailored job training programs to prevent re-incarceration.", keywords: "job training, recidivism prevention, re-entry programs, skill-building" },
+  { description: "Supporting individuals with re-entry programs focused on stability.", keywords: "re-entry programs, stability, recidivism prevention, empowerment" },
+  { description: "Empowering individuals through education to reduce recidivism rates.", keywords: "education, empowerment, recidivism reduction, re-entry success" },
+  { description: "Offering mentorship to guide individuals toward a brighter future.", keywords: "mentorship, brighter future, recidivism prevention, support" },
+  { description: "Helping individuals rebuild their lives through job placement services.", keywords: "job placement, rebuilding lives, recidivism reduction, empowerment" },
+  { description: "Reducing recidivism with programs focused on mental health support.", keywords: "mental health, recidivism prevention, support programs, stability" },
+  { description: "Providing housing assistance to individuals re-entering society.", keywords: "housing assistance, re-entry, recidivism prevention, stability" },
+  { description: "Creating personalized re-entry plans to ensure long-term success.", keywords: "personalized plans, re-entry success, recidivism reduction, empowerment" },
+  { description: "Fostering community reintegration through collaborative programs.", keywords: "community reintegration, collaboration, recidivism prevention, support" },
+  { description: "Building self-confidence in individuals to help prevent recidivism.", keywords: "self-confidence, recidivism prevention, empowerment, re-entry" },
+  { description: "Providing life skills training to support a successful transition.", keywords: "life skills, transition, recidivism reduction, empowerment" },
+  { description: "Reducing recidivism by addressing barriers to employment.", keywords: "employment barriers, recidivism reduction, re-entry support, empowerment" },
+  { description: "Offering financial literacy programs to ensure stability post-release.", keywords: "financial literacy, stability, recidivism prevention, education" },
+  { description: "Creating second chances through re-entry and rehabilitation programs.", keywords: "second chances, rehabilitation, recidivism prevention, empowerment" },
+  { description: "Helping families reconnect and rebuild after incarceration.", keywords: "family support, re-entry, recidivism prevention, empowerment" },
+  { description: "Reducing recidivism with programs focused on workforce development.", keywords: "workforce development, recidivism reduction, re-entry, opportunities" },
+  { description: "Providing entrepreneurial training for individuals leaving incarceration.", keywords: "entrepreneurial training, re-entry, recidivism prevention, empowerment" },
+  { description: "Creating opportunities for individuals to break the cycle of incarceration.", keywords: "opportunities, breaking the cycle, recidivism prevention, empowerment" },
+  { description: "Supporting justice-involved individuals with re-entry mentorship programs.", keywords: "justice-involved, mentorship, re-entry support, recidivism prevention" },
+  { description: "Offering trauma-informed care to individuals to aid in their re-entry.", keywords: "trauma-informed care, re-entry, recidivism prevention, support" }
+      ],
+      "Fighting Poverty with Education": [
+      { description: "Empowering individuals to escape poverty through education.", keywords: "education, poverty reduction, empowerment, opportunities" },
+  { description: "Providing access to quality education for underserved communities.", keywords: "quality education, underserved communities, poverty reduction, equity" },
+  { description: "Breaking the cycle of poverty with educational opportunities.", keywords: "cycle of poverty, education, empowerment, skill-building" },
+  { description: "Teaching essential skills to help individuals achieve financial stability.", keywords: "essential skills, financial stability, education, empowerment" },
+  { description: "Promoting educational programs that foster economic mobility.", keywords: "educational programs, economic mobility, poverty reduction, empowerment" },
+  { description: "Offering free educational resources to underserved populations.", keywords: "free resources, underserved populations, education, poverty reduction" },
+  { description: "Helping students from low-income families achieve academic success.", keywords: "low-income families, academic success, education, opportunities" },
+  { description: "Creating pathways to higher education for at-risk youth.", keywords: "higher education, at-risk youth, opportunities, poverty reduction" },
+  { description: "Providing vocational training to lift individuals out of poverty.", keywords: "vocational training, poverty reduction, skills development, education" },
+  { description: "Empowering families with education to build a brighter future.", keywords: "family empowerment, education, brighter future, poverty reduction" },
+  { description: "Reducing poverty through literacy and lifelong learning.", keywords: "literacy, lifelong learning, poverty reduction, education" },
+  { description: "Equipping individuals with the tools to succeed in the job market.", keywords: "job market, education, skill-building, poverty reduction" },
+  { description: "Teaching financial literacy to break the cycle of poverty.", keywords: "financial literacy, poverty reduction, education, empowerment" },
+  { description: "Offering scholarships to students in underserved communities.", keywords: "scholarships, underserved communities, education, poverty reduction" },
+  { description: "Promoting STEM education to create opportunities in high-demand fields.", keywords: "STEM education, opportunities, high-demand fields, poverty reduction" },
+  { description: "Providing adult education programs to improve job prospects.", keywords: "adult education, job prospects, poverty reduction, empowerment" },
+  { description: "Helping individuals achieve self-sufficiency through education.", keywords: "self-sufficiency, education, poverty reduction, empowerment" },
+  { description: "Fostering economic development through community education programs.", keywords: "economic development, community education, poverty reduction, empowerment" },
+  { description: "Teaching entrepreneurial skills to empower individuals in poverty.", keywords: "entrepreneurial skills, empowerment, poverty reduction, education" },
+  { description: "Reducing poverty by bridging the digital divide through tech education.", keywords: "digital divide, tech education, poverty reduction, opportunities" },
+  { description: "Teaching essential skills to help individuals escape poverty.", keywords: "essential skills, poverty escape, education, empowerment" },
+  { description: "Providing free education programs to underserved communities.", keywords: "free education, underserved communities, poverty reduction, opportunity" },
+  { description: "Equipping youth with the knowledge to build a brighter future.", keywords: "youth education, brighter future, empowerment, poverty reduction" },
+  { description: "Promoting literacy programs to break the cycle of poverty.", keywords: "literacy programs, poverty cycle, education, empowerment" },
+  { description: "Helping families overcome poverty with financial literacy education.", keywords: "financial literacy, poverty reduction, family support, education" },
+  { description: "Connecting students with scholarships to access quality education.", keywords: "scholarships, quality education, poverty reduction, opportunity" },
+  { description: "Empowering adults with vocational training to create economic stability.", keywords: "vocational training, economic stability, adult education, empowerment" },
+  { description: "Providing STEM education to prepare students for high-paying careers.", keywords: "STEM education, high-paying careers, poverty reduction, skills development" },
+  { description: "Offering mentorship programs to help students succeed academically.", keywords: "mentorship, academic success, poverty reduction, youth empowerment" },
+  { description: "Bridging the gap in education for underserved populations.", keywords: "education gap, underserved populations, poverty reduction, equity" },
+  { description: "Developing community learning centers to provide access to education.", keywords: "community learning centers, education access, poverty reduction, opportunity" },
+  { description: "Teaching entrepreneurial skills to foster financial independence.", keywords: "entrepreneurial skills, financial independence, education, empowerment" },
+  { description: "Reducing poverty with technology-focused educational programs.", keywords: "technology education, poverty reduction, skill-building, empowerment" },
+  { description: "Providing career counseling and training for long-term stability.", keywords: "career counseling, stability, education, poverty reduction" },
+  { description: "Helping students from low-income families achieve academic success.", keywords: "low-income families, academic success, education, opportunity" },
+  { description: "Fostering self-confidence and leadership through education.", keywords: "self-confidence, leadership, education, poverty reduction" },
+  { description: "Empowering single parents with education to create better futures.", keywords: "single parents, empowerment, education, poverty reduction" },
+  { description: "Offering afterschool programs to keep students engaged and learning.", keywords: "afterschool programs, student engagement, education, opportunity" },
+  { description: "Teaching digital skills to prepare individuals for modern careers.", keywords: "digital skills, modern careers, education, poverty reduction" },
+  { description: "Providing support and resources for adult learners returning to education.", keywords: "adult learners, education support, poverty reduction, empowerment" }
+      ],
+      "Rebuilding Lives with Technology": [
+      { description: "Empowering individuals to rebuild their lives through tech education.", keywords: "tech education, rebuilding lives, empowerment, skills development" },
+  { description: "Providing underserved communities with access to technology training.", keywords: "technology training, underserved communities, opportunities, empowerment" },
+  { description: "Teaching coding and digital skills to create new career opportunities.", keywords: "coding, digital skills, career opportunities, tech education" },
+  { description: "Helping individuals transition into tech careers for a brighter future.", keywords: "tech careers, transition, brighter future, skill building" },
+  { description: "Reducing unemployment through advanced technology training programs.", keywords: "unemployment reduction, technology training, empowerment, skills" },
+  { description: "Closing the digital divide by providing access to tech resources.", keywords: "digital divide, tech resources, education, empowerment" },
+  { description: "Equipping individuals with the skills needed to thrive in the tech industry.", keywords: "thriving, tech industry, skills training, empowerment" },
+  { description: "Offering hands-on tech workshops to foster innovation and growth.", keywords: "hands-on workshops, innovation, tech education, opportunities" },
+  { description: "Empowering individuals to use technology to transform their lives.", keywords: "technology transformation, empowerment, skills, education" },
+  { description: "Providing career-ready tech skills to underserved populations.", keywords: "career-ready skills, tech training, underserved populations, empowerment" },
+  { description: "Promoting self-sufficiency through digital literacy and tech training.", keywords: "self-sufficiency, digital literacy, tech training, empowerment" },
+  { description: "Using technology education to create pathways out of poverty.", keywords: "technology education, poverty reduction, skill building, opportunities" },
+  { description: "Helping re-entry individuals rebuild their lives with tech skills.", keywords: "re-entry, tech skills, rebuilding lives, empowerment" },
+  { description: "Teaching advanced digital skills to prepare for high-demand careers.", keywords: "digital skills, high-demand careers, education, tech training" },
+  { description: "Creating opportunities in the tech sector for at-risk populations.", keywords: "tech opportunities, at-risk populations, empowerment, skills development" },
+  { description: "Inspiring innovation through technology education for all.", keywords: "innovation, technology education, opportunities, empowerment" },
+  { description: "Offering free access to coding classes and technology resources.", keywords: "free coding classes, technology resources, education, empowerment" },
+  { description: "Fostering creativity and problem-solving skills with tech training.", keywords: "creativity, problem-solving, tech training, skill building" },
+  { description: "Helping individuals transition to sustainable careers through technology.", keywords: "sustainable careers, technology, skill building, empowerment" },
+  { description: "Providing community-based technology programs for personal growth.", keywords: "community programs, technology, personal growth, empowerment" },
+  { description: "Empowering individuals to rebuild their lives with digital skills.", keywords: "digital skills, rebuilding lives, empowerment, education" },
+  { description: "Providing technology education to open doors to new opportunities.", keywords: "technology education, opportunities, skill-building, empowerment" },
+  { description: "Helping underserved communities access technology for growth.", keywords: "underserved communities, technology access, growth, empowerment" },
+  { description: "Teaching essential tech skills to create sustainable career paths.", keywords: "tech skills, sustainable careers, education, opportunities" },
+  { description: "Using technology training to bridge the digital divide.", keywords: "technology training, digital divide, empowerment, education" },
+  { description: "Offering coding workshops to help individuals start new careers.", keywords: "coding workshops, career opportunities, tech education, empowerment" },
+  { description: "Providing re-entry programs focused on tech training and innovation.", keywords: "re-entry programs, tech training, innovation, skill-building" },
+  { description: "Helping individuals build self-confidence through technology skills.", keywords: "self-confidence, technology skills, empowerment, education" },
+  { description: "Creating pathways to success through hands-on technology programs.", keywords: "pathways to success, hands-on training, tech skills, opportunities" },
+  { description: "Teaching practical digital tools to rebuild lives and careers.", keywords: "digital tools, practical skills, career rebuilding, empowerment" },
+  { description: "Promoting economic independence with advanced tech education.", keywords: "economic independence, advanced tech education, empowerment, growth" },
+  { description: "Supporting at-risk youth with innovative tech training programs.", keywords: "at-risk youth, tech training, innovation, empowerment" },
+  { description: "Offering free access to technology for personal and professional growth.", keywords: "free technology access, growth, tech education, empowerment" },
+  { description: "Providing mentorship to help individuals succeed in tech fields.", keywords: "mentorship, tech fields, success, empowerment" },
+  { description: "Teaching cybersecurity basics to build a safer, tech-driven future.", keywords: "cybersecurity, safer future, tech-driven, education" },
+  { description: "Creating tech education programs for re-entry individuals.", keywords: "tech education, re-entry individuals, empowerment, opportunity" },
+  { description: "Helping individuals transition to modern careers with technology skills.", keywords: "transition, modern careers, technology skills, empowerment" },
+  { description: "Using technology to create long-term stability for underserved communities.", keywords: "technology, long-term stability, underserved communities, empowerment" },
+  { description: "Offering digital literacy programs to rebuild lives and foster confidence.", keywords: "digital literacy, rebuilding lives, confidence, tech education" },
+  { description: "Providing innovative solutions to help individuals thrive in the digital age.", keywords: "innovative solutions, digital age, thriving, tech education" }
+      ],
+    };
+
+    function autoFillFields() {
+      const selectedTitle = document.getElementById("campaign-title").value;
+
+      if (!selectedTitle) {
+        alert("Please select a campaign title!");
+        return;
+      }
+
+      // Initialize the index for the selected title if not already done
+      if (!currentOptionIndex[selectedTitle]) {
+        currentOptionIndex[selectedTitle] = 0;
+      }
+
+      const options = prebuiltData[selectedTitle];
+      if (options) {
+        const currentOption = options[currentOptionIndex[selectedTitle]];
+
+        document.getElementById("description").value = currentOption.description;
+        document.getElementById("keywords").value = currentOption.keywords;
+
+        // Cycle to the next option in the array
+        currentOptionIndex[selectedTitle] =
+          (currentOptionIndex[selectedTitle] + 1) % options.length;
+      } else {
+        alert("No predefined data available for this campaign.");
+      }
+    }
+
+    function addAd() {
+      const title = document.getElementById("campaign-title").value;
+      const description = document.getElementById("description").value;
+      const keywords = document.getElementById("keywords").value;
+      const budget = document.getElementById("budget").value;
+      const theme = document.getElementById("theme").value;
+
+      if (!title || !description || !keywords || !budget || !theme) {
+        alert("Please fill out all fields to add an ad.");
+        return;
+      }
+
+      const ad = { title, description, keywords, budget, theme };
+      ads.push(ad);
+      renderAds();
+    }
+
+    function renderAds() {
+      const adsList = document.getElementById("ads-list");
+      if (ads.length === 0) {
+        adsList.innerHTML = "<p>No ads added yet.</p>";
+        return;
+      }
+
+      adsList.innerHTML = ads
+        .map(
+          (ad, index) => `
+            <div class="ad-item">
+              <h4>Ad ${index + 1}</h4>
+              <p><strong>Title:</strong> ${ad.title}</p>
+              <p><strong>Description:</strong> ${ad.description}</p>
+              <p><strong>Keywords:</strong> ${ad.keywords}</p>
+              <p><strong>Budget:</strong> $${ad.budget}</p>
+              <p><strong>Theme:</strong> ${ad.theme}</p>
+            </div>`
+        )
+        .join("");
+    }
+
+    function generatePrompts() {
+      if (ads.length === 0) {
+        alert("Please add at least one ad to generate prompts.");
+        return;
+      }
+
+      const prompts = ads
+        .map(
+          (ad) => `Create a Google Ads campaign for VPG. VPG is a mission-driven organization committed to empowering individuals and communities through innovative education, training, and support initiatives. Our campaigns aim to drive positive social impact, reduce systemic barriers, and create opportunities for underserved populations. By leveraging technology, mentorship, and skill-building, VPG helps transform lives and build brighter futures.:
+Title: ${ad.title}
+Description: ${ad.description}
+Keywords: ${ad.keywords}
+Budget: $${ad.budget}
+Theme: ${ad.theme}`
+        )
+        .join("\n\n");
+
+      document.getElementById("prompt-text").innerText = prompts;
+    }
+  </script>
+  
+</body>
+</html>
