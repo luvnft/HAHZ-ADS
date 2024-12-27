@@ -559,7 +559,7 @@
 
       const prompts = ads
         .map(
-          (ad) => `Intro:Create a Google Ads campaign for VPG. VPG is a mission-driven organization committed to empowering individuals and communities through innovative education, training, and support initiatives. Our campaigns aim to drive positive social impact, reduce systemic barriers, and create opportunities for underserved populations. By leveraging technology, mentorship, and skill-building, VPG helps transform lives and build brighter futures.\n Title: ${ad.title}\nDescription: ${ad.description}\nKeywords: ${ad.keywords}\nBudget: $${ad.budget}\nTheme: ${ad.theme}`
+          (ad) => `Create a Google Ads campaign for VPG. VPG is a mission-driven organization committed to empowering individuals and communities through innovative education, training, and support initiatives. Our campaigns aim to drive positive social impact, reduce systemic barriers, and create opportunities for underserved populations. By leveraging technology, mentorship, and skill-building, VPG helps transform lives and build brighter futures.\nTitle: ${ad.title}\nDescription: ${ad.description}\nKeywords: ${ad.keywords}\nBudget: $${ad.budget}\nTheme: ${ad.theme}`
         )
         .join("\n\n");
 
